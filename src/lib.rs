@@ -27,6 +27,7 @@ impl Template {
         let current_dir = env::current_dir().unwrap();
         match self.name.as_str() {
             "empty" => current_dir.join("templates/empty"),
+            "Storage" => current_dir.join("templates/storage"),
             "Hello World" => current_dir.join("templates/hello_world"),
             "NFT" => current_dir.join("templates/NFT"),
             _ => current_dir.join("templates/empty"),
@@ -42,7 +43,7 @@ impl Template {
 }
 
 pub fn run() -> Result<(), Box<dyn Error>> {
-    let options = vec!["empty", "Hello World", "NFT"];
+    let options = vec!["empty", "Hello World", "NFT","Storage"];
 
     let project_name = Text::new("Project Name")
         .with_help_message("Enter your project name")
