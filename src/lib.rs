@@ -47,7 +47,7 @@ pub fn run ()->Result<(),Box<dyn Error>>{
 
     let project_name = Text::new("Project Name")
     .with_help_message("Enter your project name")
-    .with_default("hello world")
+    .with_default("hello_world")
     .prompt()?;
 let directory= Text::new("Directory")
     .with_help_message("Enter your project directory")
@@ -61,10 +61,10 @@ let template_name= Select::new("Please select a template",options)
     let template = Template::new(String::from(template_name));
     let template_path=template.get_full_path();
     println!("template path is : {}", template_path.display());
-        copy_dir_all(template_path, directory)?;
+        copy_dir_all(template_path, directory,project_name.as_str())?;
         Ok(())
 }
-pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> Result<()> {
+pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>, name: &str) -> Result<()> {
         for file in fs::read_dir(&src)?{
         println!("file listed is : {}", file.unwrap().path().display());
     }
@@ -73,20 +73,24 @@ pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> Result<()> 
         let entry = entry?;
         let ty = entry.file_type()?;
         if ty.is_dir() {
-            copy_dir_all(entry.path(), dst.as_ref().join(entry.file_name()))?;
+            copy_dir_all(entry.path(), dst.as_ref().join(entry.file_name()),name)?;
         } else {
              fs::copy(entry.path(), dst.as_ref().join(entry.file_name()))?;
-            //     if let Some(name) = name {
-            //     let mut contents = String::new();
-            //     fs::File::open(&file)?.read_to_string(&mut contents)?;
-            //     let contents = contents.replace("{{name}}", name);
-            //     let contents = contents.replace("{{camel_name}}", &name.to_upper_camel_case());
-            //     outfile.write_all(contents.as_bytes())?;
-            // } else {
-            //     let mut contents = Vec::new();
-            //     fs::File::open(&file)?.read_to_end(&mut contents)?;
-            //     outfile.write_all(&contents)?;
-            // }
+             // replace name = "{{name}}"  with  name = "project name" in Cargo.toml
+                if entry.file_name().to_str().unwrap() == "Cargo.toml" {
+                    let mut file = fs::OpenOptions::new()
+                        .read(true)
+                        .write(true)
+                        .open(dst.as_ref().join(entry.file_name()))?;
+                    let mut contents = String::new();
+                    file.read_to_string(&mut contents)?;
+                    let contents = contents.replace("{{name}}", name);
+                    file.seek(std::io::SeekFrom::Start(0))?;
+                    file.write_all(contents.as_bytes())?;
+                    file.set_len(contents.len() as u64)?;
+                }
+
+          
         }
     }
     Ok(())
