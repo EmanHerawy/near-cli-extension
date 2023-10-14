@@ -96,22 +96,18 @@ pub fn copy_template(
     name: &str,
 ) -> Result<()> {
     let dst = dst.as_ref();
-    println!("dest file: {}", dst.display());
     // Create the destination directory if it doesn't exist
     if !dst.exists() {
         fs::create_dir_all(dst)?;
     }
 
      for entry in template {
-          println!("*--------------------------------*");
-
          let file_path = entry.to_string();
-        println!("file_path: {}", file_path);
         let template_entry = Assets::get(format!("assets/empty{}", file_path).as_str()).unwrap();
         let template_entry_bytes: &[u8] = &template_entry.data;
 
         let dest_file = dst.join(format!("{}{}", &name,&file_path));
-        println!("dest_file: {}", dest_file.display());
+        println!("creating file : {}", dest_file.display());
         let parent_dir = dest_file.parent().ok_or_else(|| {
             std::io::Error::new(std::io::ErrorKind::Other, "Failed to determine parent directory")
         })?;
