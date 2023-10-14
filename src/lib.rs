@@ -78,7 +78,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     let template = match template_name {
         "empty" => get_sub_folder("assets/empty"),
         "Storage" => get_sub_folder("assets/storage"),
-        "Hello World" => get_sub_folder("assets/hello"),
+        "Hello World" => get_sub_folder("assets/hello_world"),
         "NFT" => get_sub_folder("assets/nft"),
         _ => get_sub_folder("assets/empty"),
       
