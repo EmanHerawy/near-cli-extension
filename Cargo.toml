@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.75"
 inquire = "0.6.2"
+rust-embed="8.0.0"

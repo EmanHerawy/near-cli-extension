@@ -2,7 +2,6 @@ use std::{
     env,
     fs,
     io::{
-        Cursor,
         Read,
         Seek,
         Write,
@@ -10,41 +9,65 @@ use std::{
     path::{
         Path,
         PathBuf,
-    },
+    }, borrow::Cow,
 };
 use std::error::Error;
 use anyhow::Result;
 use inquire::Select;
 use inquire::Text;
+use rust_embed::RustEmbed;
 
-pub struct Template {
-    name: String,
-    path: String,
+#[derive(RustEmbed)]
+#[folder = "templates"]
+#[prefix = "assets/"]
+struct Assets;
+
+
+// #[derive(RustEmbed)]
+// #[folder = "templates/empty"]
+// #[prefix = "empty/"]
+// struct Empty;
+// #[derive(RustEmbed)]
+// #[folder = "templates/nft"]
+// #[prefix = "nft/"]
+// struct NFT;
+// #[derive(RustEmbed)]
+// #[folder = "templates/storage"]
+// #[prefix = "storage/"]
+// struct Storage;
+// #[derive(RustEmbed)]
+// #[folder = "templates/hello_world"]
+// #[prefix = "hello/"]
+// struct HelloWorld;
+
+fn get_sub_folder<'a>(path: &'a str) -> impl Iterator<Item = Cow<'a, str>> + 'a {
+    Assets::iter()
+        .filter(move|file| file.as_ref().starts_with(path))
+        .map(move|file| file.as_ref().replace(path, "").into())
 }
+// enum TemplateType {
+//     Empty(Empty),
+//     NFT(NFT),
+//     Storage(Storage),
+//     HelloWorld(HelloWorld),
+// }
 
-impl Template {
-    pub fn get_full_path(&self) -> PathBuf {
-        let current_dir = env::current_dir().unwrap();
-        match self.name.as_str() {
-            "empty" => current_dir.join("templates/empty"),
-            "Storage" => current_dir.join("templates/storage"),
-            "Hello World" => current_dir.join("templates/hello_world"),
-            "NFT" => current_dir.join("templates/NFT"),
-            _ => current_dir.join("templates/empty"),
-        }
-    }
+ 
 
-    pub fn new(name: String) -> Self {
-        Template {
-            name,
-            path: String::from("templates"),
-        }
-    }
-}
+// impl AssetTrait for TemplateType {
+//     fn get_subfolder(&self) -> std::borrow::Cow<'static, str> {
+//         match self {
+//             TemplateType::Empty(_) => "empty/".into(),
+//             TemplateType::NFT(_) => "nft/".into(),
+//             TemplateType::Storage(_) => "storage/".into(),
+//             TemplateType::HelloWorld(_) => "hello/".into(),
+//         }
+//     }
+// }
 
 pub fn run() -> Result<(), Box<dyn Error>> {
     let options = vec!["empty", "Hello World", "NFT","Storage"];
-
+    
     let project_name = Text::new("Project Name")
         .with_help_message("Enter your project name")
         .with_default("hello_world")
@@ -56,13 +79,21 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     let template_name = Select::new("Please select a template", options)
         .with_help_message("Select a template")
         .prompt()?;
+    let template = match template_name {
+        "empty" => get_sub_folder("assets/empty"),
+        "Storage" => get_sub_folder("assets/storage"),
+        "Hello World" => get_sub_folder("assets/hello"),
+        "NFT" => get_sub_folder("assets/nft"),
+        _ => get_sub_folder("assets/empty"),
+      
+    };
 
-    let template = Template::new(String::from(template_name));
-    let template_path = template.get_full_path();
-    println!("template path is : {}", template_path.display());
-    copy_dir_all(template_path, directory, project_name.as_str())?;
+
+    // copy_dir_all(template, directory, project_name.as_str())?;
     Ok(())
 }
+
+
 
 pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>, name: &str) -> Result<()> {
     for file in fs::read_dir(&src)? {
