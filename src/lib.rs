@@ -36,10 +36,21 @@ struct Assets;
 // #[prefix = "hello/"]
 // struct HelloWorld;
 
-fn get_sub_folder<'a>(path: &'a str) -> impl Iterator<Item = Cow<'a, str>> + 'a {
-    Assets::iter()
-        .filter(move|file| file.as_ref().starts_with(path))
-        .map(move|file| file.as_ref().replace(path, "").into())
+// fn get_sub_folder<'a>(path: &'a str) -> impl Iterator<Item = Cow<'a, str>> + 'a {
+//     Assets::iter()
+//         .filter(move|file| file.as_ref().starts_with(path))
+//         .map(move|file| file.as_ref().replace(path, "").into())
+// }
+pub fn get_sub_folder(path: &str) -> Cow<'static, str> {
+    let sub_folders: Vec<Cow<'static, str>> = Assets::iter()
+        .filter(|file| file.as_ref().starts_with(path))
+        .map(|file| file.as_ref().replace(path, "").into())
+        .collect();
+    sub_folders.join("\n").into()
+}
+struct Templates<'a> {
+    name: &'a str,
+    data: std::borrow::Cow<'static, str>,
 }
 // enum TemplateType {
 //     Empty(Empty),
@@ -76,11 +87,11 @@ pub fn run() -> Result<(), Box<dyn Error>> {
         .with_help_message("Select a template")
         .prompt()?;
     let template = match template_name {
-        "empty" => get_sub_folder("assets/empty"),
-        "Storage" => get_sub_folder("assets/storage"),
-        "Hello World" => get_sub_folder("assets/hello_world"),
-        "NFT" => get_sub_folder("assets/nft"),
-        _ => get_sub_folder("assets/empty"),
+        "empty" => Templates{name : "assets/empty", data:get_sub_folder("assets/empty")},
+        "Hello World" => Templates{name : "assets/hello_world", data:get_sub_folder("assets/hello_world")},
+        "NFT" => Templates{name : "assets/nft", data:get_sub_folder("assets/nft")},
+        "Storage" => Templates{name : "assets/storage", data:get_sub_folder("assets/storage")},
+        _ => Templates{name : "assets/empty", data:get_sub_folder("assets/empty")},
       
     };
 
@@ -90,8 +101,8 @@ pub fn run() -> Result<(), Box<dyn Error>> {
 }
 
 
-pub fn copy_template(
-    template: impl Iterator<Item = std::borrow::Cow<'static, str>>,
+ fn copy_template(
+    template:Templates,
     dst: impl AsRef<Path>,
     name: &str,
 ) -> Result<()> {
@@ -101,9 +112,9 @@ pub fn copy_template(
         fs::create_dir_all(dst)?;
     }
 
-     for entry in template {
+     for entry in template.data.lines() {
          let file_path = entry.to_string();
-        let template_entry = Assets::get(format!("assets/empty{}", file_path).as_str()).unwrap();
+        let template_entry = Assets::get(format!("{}{}",&template.name, file_path).as_str()).unwrap();
         let template_entry_bytes: &[u8] = &template_entry.data;
 
         let dest_file = dst.join(format!("{}{}", &name,&file_path));
@@ -112,7 +123,7 @@ pub fn copy_template(
             std::io::Error::new(std::io::ErrorKind::Other, "Failed to determine parent directory")
         })?;
 
-        // Create the parent directory if it doesn't exist
+        //Create the parent directory if it doesn't exist
         if !parent_dir.exists() {
             fs::create_dir_all(parent_dir)?;
         }
