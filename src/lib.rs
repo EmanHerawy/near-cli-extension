@@ -1,14 +1,10 @@
 use std::{
-    env,
     fs,
     io::{
-        Read,
-        Seek,
         Write,
     },
     path::{
         Path,
-        PathBuf,
     }, borrow::Cow,
 };
 use std::error::Error;
@@ -89,63 +85,63 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     };
 
 
-    // copy_dir_all(template, directory, project_name.as_str())?;
+    copy_template(template, directory, project_name.as_str())?;
     Ok(())
 }
 
 
-
-pub fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>, name: &str) -> Result<()> {
-    for file in fs::read_dir(&src)? {
-        println!("file listed is : {}", file.unwrap().path().display());
-    }
-
+pub fn copy_template(
+    template: impl Iterator<Item = std::borrow::Cow<'static, str>>,
+    dst: impl AsRef<Path>,
+    name: &str,
+) -> Result<()> {
     let dst = dst.as_ref();
-
-    // Check if the destination directory already exists
-    if dst.exists() && !dst.is_dir() {
-        // Handle the case where dst is a file, not a directory
-        return Err(anyhow::anyhow!("Destination is not a directory: {}", dst.display()));
-    }
-
+    println!("dest file: {}", dst.display());
     // Create the destination directory if it doesn't exist
     if !dst.exists() {
         fs::create_dir_all(dst)?;
     }
 
-    for entry in fs::read_dir(src)? {
-        let entry = entry?;
-        let ty = entry.file_type()?;
+     for entry in template {
+          println!("*--------------------------------*");
 
-        if ty.is_dir() {
-            copy_dir_all(entry.path(), dst.join(entry.file_name()), name)?;
-        } else if ty.is_file() {
-            let dest_file = dst.join(entry.file_name());
+         let file_path = entry.to_string();
+        println!("file_path: {}", file_path);
+        let template_entry = Assets::get(format!("assets/empty{}", file_path).as_str()).unwrap();
+        let template_entry_bytes: &[u8] = &template_entry.data;
 
-            // Check if the destination file already exists
-            if dest_file.exists() {
-                // Handle the case where the file already exists, e.g., prompt the user for confirmation
-                println!("File already exists: {}", dest_file.display());
-                // You can add logic here to prompt the user for confirmation or decide how to handle this case
-            } else {
-                fs::copy(entry.path(), &dest_file)?;
+        let dest_file = dst.join(format!("{}{}", &name,&file_path));
+        println!("dest_file: {}", dest_file.display());
+        let parent_dir = dest_file.parent().ok_or_else(|| {
+            std::io::Error::new(std::io::ErrorKind::Other, "Failed to determine parent directory")
+        })?;
 
-                // replace name = "{{name}}" with name = "project name" in Cargo.toml
-                if entry.file_name().to_str().unwrap() == "Cargo.toml" {
-                    let mut file = fs::OpenOptions::new()
-                        .read(true)
-                        .write(true)
-                        .open(dest_file)?;
-                    let mut contents = String::new();
-                    file.read_to_string(&mut contents)?;
-                    let contents = contents.replace("{{name}}", name);
-                    file.seek(std::io::SeekFrom::Start(0))?;
-                    file.write_all(contents.as_bytes())?;
-                    file.set_len(contents.len() as u64)?;
-                }
+        // Create the parent directory if it doesn't exist
+        if !parent_dir.exists() {
+            fs::create_dir_all(parent_dir)?;
+        }
+
+        // Check if the destination file already exists
+        if dest_file.exists() {
+            // Handle the case where the file already exists, e.g., prompt the user for confirmation
+            println!("File already exists: {}", dest_file.display());
+            // You can add logic here to prompt the user for confirmation or decide how to handle this case
+        } else {
+            let mut dest_file = fs::File::create(&dest_file)?;
+           if file_path == "/Cargo.toml" {
+            // replace {{name}} with project name in the copied file
+                    let mut content_str = String::from_utf8(template_entry_bytes.to_vec())?;
+                    content_str = content_str.replace("{{name}}", name);
+                    let content_bytes = content_str.as_bytes();
+                     dest_file.write_all(content_bytes)?;
+
+           }else{
+             dest_file.write_all(template_entry_bytes)?;
+           
             }
         }
     }
-
     Ok(())
 }
+
+
