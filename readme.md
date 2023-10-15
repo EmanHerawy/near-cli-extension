@@ -1,23 +1,57 @@
 ## NEAR-cli-new
-NEAR-cli-new is a command line tool that helps you create a new NEAR project based on a chosen template.
-This is a NEAR Cli extension written in Rust.
-### Problem
-When I started to learn how to develop NEAR smart contract using rust, I found that there is no easy way to create a new project. I have to manually create a new project, check required dependencies , and modify the Cargo.toml file by adding these required dependencies. This is a tedious process and make it hard for new developers to get started.
+near-cli-new is a command-line tool that simplifies the process of creating new NEAR projects based on a chosen template. This Rust-based NEAR CLI extension aims to streamline project setup and assist developers in kickstarting their NEAR smart contract development.
 
-### Steps to setup the project previously
-#### Build from scratch
-- Create a new cargo project `cargo new --lib my-project`
-- search for dependencies in NEAR docs (**which is not easy to find in the docs** )or any project to add them
-- update your lib.rs file with the required `using` statements
-- develop your new contract from scratch
 
-#### Fork a repository
-- Look for a repository and fork it
-- Clean up the forked repository so that you can use it as template
+## Table of Contents
+
+- [NEAR-cli-new](#near-cli-new)
+- [Table of Contents](#table-of-contents)
+- [Introduction](#introduction)
+- [Problem Statement](#problem-statement)
+- [Previous Setup Steps](#previous-setup-steps)
+    - [Building from Scratch](#building-from-scratch)
+    - [Forking a Repository](#forking-a-repository)
+- [Solution](#solution)
+- [Build](#build)
+- [Installation](#installation)
+- [Value Proposition](#value-proposition)
+- [future work](#future-work)
+
+## Introduction
+
+Creating a new NEAR project from scratch or forking existing repositories can be a time-consuming and challenging task, especially for newcomers. NEAR-cli-new simplifies this process and guides developers through the setup of NEAR smart contracts by offering various project templates.
+
+## Problem Statement
+
+Developers often face several difficulties when setting up NEAR projects:
+
+- Discovering and incorporating the required dependencies, which are not always easy to find in the NEAR documentation.
+- Understanding the architecture and structure of NEAR smart contracts.
+- Avoiding common setup mistakes and issues.
+
+## Previous Setup Steps
+
+Before NEAR-cli-new, developers had to perform a series of manual setup steps:
+
+#### Building from Scratch
+
+1. Create a new Cargo project: `cargo new --lib my-project`.
+2. Search for dependencies in NEAR docs (which is not always straightforward) and manually add them to the Cargo.toml file.
+3. Update the lib.rs file with the necessary `using` statements.
+4. Begin developing the NEAR smart contract from scratch.
+
+#### Forking a Repository
+
+1. Search for an existing repository and fork it.
+2. Clean up the forked repository, removing unwanted files and customizing it to serve as a project template.
 
 ## Solution
-- install the cli extension [check installation section](#installation)
-- `near-cli-new` and follow the instructions and choose the template you want to use e.g `nft`, `empty`, `hello_world` etc
+
+NEAR-cli-new offers a user-friendly solution to the challenges faced by developers. With this tool, you can:
+
+- Install the CLI extension locally with ease (see [Installation](#installation)).
+- Execute `near-cli-new` and follow the on-screen instructions to create a new NEAR project using a template of your choice (e.g., `nft`, `empty`, `hello_world`).
+  ![Alt text](demo.gif)
 
 ## Build 
 - `cargo  build --release`
@@ -28,12 +62,14 @@ install the cli extension locally
 cargo install --path .
 ```
 ## Value Proposition
-- easy to use
-- helps new developers to get started quickly
-- helps new developers to learn how to develop NEAR smart contract using rust by showing them the required dependencies and contract architecture.
-- supports multiple templates for different use cases
+- Easy to use
+- Helps new developers to get started quickly
+- Helps new developers to learn how to develop NEAR smart contract using rust by showing them the required dependencies and contract architecture.
+- Supports multiple templates for different use cases
 
 
 ## future work
 - Add more templates . This project will be the hub of all NEAR Examples
 - Add support for new features e.g generate tests , contract abi 
+
+
