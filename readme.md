@@ -1,4 +1,5 @@
 ## NEAR-cli-new
+[![Ceasefire Now](https://badge.techforpalestine.org/ceasefire-now)](https://techforpalestine.org/learn-more)
 near-cli-new is a command-line tool that simplifies the process of creating new NEAR projects based on a chosen template. This Rust-based NEAR CLI extension aims to streamline project setup and assist developers in kickstarting their NEAR smart contract development.
 
 
